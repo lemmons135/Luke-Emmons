@@ -5,6 +5,7 @@ public class player : MonoBehaviour
 {
     float movementX;
     [SerializeField] float speed = 6;
+    [SerializeField] GameObject playerColliderDetector;
 
     public int maxJumpCount = 2;
     private int jumpCount;
@@ -15,17 +16,20 @@ public class player : MonoBehaviour
 
     [SerializeField] Rigidbody2D rb;
 
+    private Animator animator;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     
     void Start()
     {
+        animator = GetComponent<Animator>();
         jumpCount = maxJumpCount;
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        animator.SetBool("walking", movementX != 0f);
     }
 
     void OnMove(InputValue value)
@@ -36,17 +40,14 @@ public class player : MonoBehaviour
     void OnJump()
     {
         jumpKeyPressed = true;
+        //
         isGrounded = false;
-    }
-
-    void OnFire()
-    {
-        Debug.Log("Player x coord: " + transform.position.x);
     }
 
     void FixedUpdate()
     {
-        float XmoveDistance = movementX * speed * Time.fixedDeltaTime;
+        float XmoveDistance = movementX * speed;
+        //isGrounded = playerColliderDetector.GetComponent<PlayerColliderLogic>().GetIsGrounded();
 
         // if the player wants to jump and can still jump, jump
         if (jumpKeyPressed && jumpCount > 0)
@@ -66,12 +67,20 @@ public class player : MonoBehaviour
         }
 
         transform.position = new Vector2(transform.position.x + XmoveDistance, transform.position.y);
+
+        /*
+        if (isGrounded)
+        {
+            resetJump();
+        }
+        */
     }
 
     void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.CompareTag("ground"))
+        if (collision.collider.CompareTag("ground"))
         {
+            isGrounded = true;
             resetJump();
         }
     }
@@ -79,7 +88,6 @@ public class player : MonoBehaviour
     void resetJump()
     {
         jumpCount = maxJumpCount;
-        isGrounded = true;
         jumpKeyPressed = false;
     }
 }
